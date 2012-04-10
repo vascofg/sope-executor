@@ -36,6 +36,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 OBJECTFILES= \
 	${OBJECTDIR}/Activity.o \
 	${OBJECTDIR}/Process.o \
+	${OBJECTDIR}/Executor.o \
 	${OBJECTDIR}/main.o
 
 
@@ -72,6 +73,11 @@ ${OBJECTDIR}/Process.o: Process.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.c) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/Process.o Process.c
+
+${OBJECTDIR}/Executor.o: Executor.c 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.c) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/Executor.o Executor.c
 
 ${OBJECTDIR}/main.o: main.c 
 	${MKDIR} -p ${OBJECTDIR}

@@ -16,6 +16,7 @@
                    displayName="Source Files"
                    projectFiles="true">
       <itemPath>Activity.c</itemPath>
+      <itemPath>Executor.c</itemPath>
       <itemPath>Process.c</itemPath>
       <itemPath>main.c</itemPath>
     </logicalFolder>

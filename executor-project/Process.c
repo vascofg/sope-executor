@@ -1,6 +1,7 @@
 #include "Process.h"
 #include <stdbool.h>
-
+#include <stdio.h>
+#include <stdlib.h>
 void process_create(struct Process *p, bool process_isRunning, char *command, int PID){
     p->PID=PID;
     p->isRunning=process_isRunning;

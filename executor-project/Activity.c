@@ -1,7 +1,8 @@
 #include "Activity.h"
 #include "Process.h"
 #include <stdbool.h>
-
+#include <stdio.h>
+#include <stdlib.h>
 void activity_create(struct Activity *a, char type, bool success, struct Process *process){
     a->type=type;
     a->success=success;
