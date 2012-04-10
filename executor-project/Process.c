@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 void process_create(struct Process *p,char *command, int PID){
     p->PID=PID;
     p->isRunning=1;
