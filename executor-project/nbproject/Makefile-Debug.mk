@@ -34,6 +34,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/Activity.o \
 	${OBJECTDIR}/Process.o \
 	${OBJECTDIR}/main.o
 
@@ -61,6 +62,11 @@ LDLIBSOPTIONS=
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/executor-project: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/executor-project ${OBJECTFILES} ${LDLIBSOPTIONS} 
+
+${OBJECTDIR}/Activity.o: Activity.c 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.c) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/Activity.o Activity.c
 
 ${OBJECTDIR}/Process.o: Process.c 
 	${MKDIR} -p ${OBJECTDIR}

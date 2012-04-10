@@ -1,23 +1,37 @@
 #ifndef PROCESS_H
 #define	PROCESS_H
 #include <stdbool.h>
-
+/**
+ * Process.h - A struct for defining the basic information of a process.
+ */ 
 struct Process {
-    bool isRunning;
     char *command;
     int PID;
+    bool isRunning;
 };
+/**
+ * Creates a new process with the necessary information
+ * @param p the process pointer
+ * @param isRunning the running boolean value
+ * @param command the command given
+ * @param PID the Process identificador in Linux
+ */
+void process_create(struct Process *p, bool process_isRunning, char *command, int PID);
 
-void terminate(struct Process p);
+// Set methods
+void process_setCommand(struct Process *p, char *command);
+void process_setRunning(struct Process *p, bool process_isRunning);
+void process_setPID(struct Process *p, int PID);
 
-char* getCommand(struct Process p);
+// Get Methods
+char * process_getCommand(struct Process *p);
+int process_getPID(struct Process *p);
+bool process_getRunning(struct Process *p);
 
-void setCommand(struct Process p, char command[]);
-
-bool isRunning(struct Process p);
-
-int getPID(struct Process p);
-
-void setPID(struct Process p, int PID);
+// Others methods
+void process_print(struct Process *p);
+void process_printn(struct Process *p);
+void process_terminate(struct Process *p);
+bool process_isRunning(struct Process *p);
 
 #endif
