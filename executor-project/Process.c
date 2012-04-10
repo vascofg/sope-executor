@@ -2,10 +2,11 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-void process_create(struct Process *p, bool process_isRunning, char *command, int PID){
+void process_create(struct Process *p,char *command, int PID){
     p->PID=PID;
-    p->isRunning=process_isRunning;
-    p->command=command;
+    p->isRunning=1;
+    p->command=malloc(sizeof(char)*100);
+    strcpy(p->command,command);
 }
 
 void process_setCommand(struct Process *p, char *command){
@@ -42,8 +43,6 @@ bool process_isRunning(struct Process *p){
 
 void process_print(struct Process *p){
     printf("Process \"%s\" with PID %d ",p->command, p->PID);
-    if(p->isRunning) printf("is running.");
-    else printf("has been terminated.");
 }
 
 void process_printn(struct Process *p){

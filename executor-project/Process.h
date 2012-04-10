@@ -16,7 +16,7 @@ struct Process {
  * @param command the command given
  * @param PID the Process identificador in Linux
  */
-void process_create(struct Process *p, bool process_isRunning, char *command, int PID);
+void process_create(struct Process *p, char *command, int PID);
 
 // Set methods
 void process_setCommand(struct Process *p, char *command);

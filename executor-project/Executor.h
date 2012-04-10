@@ -1,7 +1,6 @@
 #ifndef EXECUTOR_H
 #define	EXECUTOR_H
 #include "Process.h"
-#include "Activity.h"
 /**
  * Executor.h - A struct for describing a program that allows a user to launch, 
  * terminate and get information about commands that he gave.
@@ -13,8 +12,6 @@ struct Executor {
     char* errorFileName;
     struct Process** processes;
     int processLastIndex;
-    struct Activity** activities;
-    int activityLastIndex;
 };
 /**
  * Create a new executor
@@ -37,10 +34,8 @@ void executor_exit(struct Executor *e);
 
 // Management of processes and activities
 void executor_addProcess(struct Executor *e,struct Process *p);
-void executor_addActivity(struct Executor *e,struct Activity *a);
+void executor_printProcesses(struct Executor *e);
 
-// Other methods
-void executor_printlogs(struct Executor *e);
-
+struct Process *  executor_getProcessbyPID(struct Executor *e,int pid);
 #endif	/* EXECUTOR_H */
 
