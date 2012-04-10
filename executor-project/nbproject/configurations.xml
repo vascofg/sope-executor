@@ -5,6 +5,7 @@
                    displayName="Header Files"
                    projectFiles="true">
       <itemPath>Activity.h</itemPath>
+      <itemPath>Executor.h</itemPath>
       <itemPath>Process.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
