@@ -11,6 +11,7 @@ struct Activity {
     char type;
     bool success;
     struct Process *process;
+    char *command;
 };
 /**
  * Creates a new activity with the necessary information
@@ -25,11 +26,13 @@ void activity_create(struct Activity *a, char type, bool success, struct Process
 void activity_setType(struct Activity *a, char type);
 void activity_setSucess(struct Activity *a, bool success);
 void activity_setProcess(struct Activity *a,struct Process *process );
+void activity_setCommand(struct Activity *a, char *command);
 
 // Get methods
 char activity_getType(struct Activity *a);
 bool activity_getSuccess(struct Activity *a);
 struct Process * activity_getProcess(struct Activity *a);
+char * activity_getCommand(struct Activity *a);
 
 // Others methods
 void activity_print(struct Activity *a);

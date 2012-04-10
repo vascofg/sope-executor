@@ -21,6 +21,10 @@ void activity_setProcess(struct Activity *a,struct Process *process ){
     a->process=process;
 }
 
+void activity_setCommand(struct Activity *a, char *command){
+    a->command=command;
+}
+
 char activity_getType(struct Activity *a){
     return a->type;
 }
@@ -32,6 +36,11 @@ bool activity_getSuccess(struct Activity *a){
 struct Process * activity_getProcess(struct Activity *a){
     return a->process;
 }
+
+char * activity_getCommand(struct Activity *a){
+    return a->command;
+}
+
 void activity_print(struct Activity *a){
     // Type of activity
     if(a->type=='l') printf("Launched ");
