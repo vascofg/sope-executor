@@ -11,7 +11,9 @@
 #define MAX_LINE 100
 #define MAX_PROCESSES 20
 #define MAX_ACTIVITIES 50
-
+void cls(void) {
+  printf("%c[2J",27);
+}
 void executor_create(struct Executor *e, char* logFileName, char* errorFileName) {
     e->logFileName = logFileName;
     e->errorFileName = errorFileName;
@@ -21,20 +23,24 @@ void executor_create(struct Executor *e, char* logFileName, char* errorFileName)
 
     e->processLastIndex = -1;
     e->processes = malloc(sizeof (struct Process *) * MAX_PROCESSES);
+    currentExecutor = e;
 }
 
-void handler(int sig) {
+void executor_sigchildHandler(int sig) {
     pid_t pid;
-
     pid = wait(NULL);
-
-    printf("Pid %d exited.\n", pid);
+    process_terminate(executor_getProcessbyPID(currentExecutor, pid));
+    currentExecutor->terminatedProcesses++;
+    currentExecutor->runningProcesses--;
+    printf("Process with %d terminated.\n", pid);
+    sleep(2);
 }
 
 void executor_run(struct Executor *e) {
     char option;
-    signal(SIGCHLD, handler); 
+    signal(SIGCHLD, executor_sigchildHandler);
     do {
+        cls();
         executor_printHeader(e);
         option = executor_receiveOrder(e);
         switch (option) {
@@ -46,7 +52,6 @@ void executor_run(struct Executor *e) {
                 break;
             case 'S': executor_exit(e);
                 break;
-            default: printf("Opção inválida!\n");
         }
 
     } while (option != 'S');
@@ -65,7 +70,7 @@ char executor_receiveOrder(struct Executor *e) {
         gets(input);
     } while (strlen(input) != 1);
     input[0] = toupper(input[0]);
-    system("clear");
+    cls();
     return input[0];
 }
 
@@ -80,11 +85,10 @@ void executor_launch(struct Executor *e) {
     // child
     if ((pid = fork()) == 0) {
         execlp("xterm", "xterm", "-hold", "-e", cmd, NULL);
-    }        // failed
+    }// failed
     else if (pid < 0) {
         perror("fork(): ");
-    }
-        // parent
+    }        // parent
     else {
         // Create the information of the process
         struct Process *p = malloc(sizeof (struct Process));
@@ -92,9 +96,9 @@ void executor_launch(struct Executor *e) {
         e->runningProcesses++;
         executor_addProcess(e, p);
         process_printn(p);
+        sleep(2);
 
     }
-
 }
 
 void executor_inform(struct Executor *e) {
@@ -112,17 +116,26 @@ void executor_printActiveProcesses(struct Executor *e) {
 }
 
 void executor_terminate(struct Executor *e) {
-    printf("Choose a PID to terminate:\n");
-    executor_printActiveProcesses(e);
-    printf("PID> ");
-    int pid;
-    scanf("%d", &pid);
-    if (kill(pid, SIGKILL) < 0) {
-        perror("Kill()");
-    };
-    process_terminate(executor_getProcessbyPID(e, pid));
-    e->terminatedProcesses++;
-    e->runningProcesses--;
+    if (e->runningProcesses > 0) {
+        printf("Choose a PID to terminate:\n");
+        executor_printActiveProcesses(e);
+        int pid;
+        char input[100];
+        do {
+            printf("PID> ");
+            gets(input);
+            pid=atoi(input);
+        }while(executor_getProcessbyPID(e,pid)==NULL);
+
+        if (kill(pid, SIGKILL) < 0) {
+            perror("Kill()");
+        };
+        sleep(1); // wait feedback
+    }
+    else{
+        printf("There are no processes running!\n");
+    }
+
 
 }
 

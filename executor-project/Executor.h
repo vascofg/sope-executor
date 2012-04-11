@@ -1,6 +1,7 @@
 #ifndef EXECUTOR_H
 #define	EXECUTOR_H
 #include "Process.h"
+struct Executor *currentExecutor;
 /**
  * Executor.h - A struct for describing a program that allows a user to launch, 
  * terminate and get information about commands that he gave.
@@ -37,5 +38,6 @@ void executor_addProcess(struct Executor *e,struct Process *p);
 void executor_printProcesses(struct Executor *e);
 
 struct Process *  executor_getProcessbyPID(struct Executor *e,int pid);
+void executor_sigchildHandler(int sig);
 #endif	/* EXECUTOR_H */
 
