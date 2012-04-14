@@ -29,6 +29,10 @@ void executor_create(struct Executor *e, char* logFileName, char* errorFileName)
     
     // (4) Set the global variable of the current executor to this executor
     currentExecutor = e;
+    
+    // (5) Create the log file
+     if(open(e->logFileName, O_CREAT | O_TRUNC, 0777)<0)
+        perror("logFileName");
 }
 
 void executor_sigchildHandler(int sig) {
@@ -135,7 +139,10 @@ void executor_launch(struct Executor *e) {
 }
 
 void executor_inform(struct Executor *e) {
-    printf("Inform\n");
+    if ((e->terminatedProcesses + e->runningProcesses) == 0) printf("O ficheiro de registos está vazio. Faça alguma coisa!\n");
+    else executor_printLogFile(e);
+    printf("\nPrima qualquer tecla para continuar..");
+    getchar();
 }
 
 void executor_printActiveProcesses(struct Executor *e) {
@@ -172,7 +179,8 @@ void executor_terminate(struct Executor *e) {
 }
 
 void executor_exit(struct Executor *e) {
-    printf("Exit\n");
+    executor_killAll(e);
+    executor_printLogFile(e);
 }
 
 void executor_addProcess(struct Executor *e, struct Process *p) {
@@ -202,18 +210,50 @@ void executor_addLog(struct Executor *e, char *log) {
         exit(1);
     }
     strcat(log, "\n");
+
     // (2) Append data
     write(logFileDes, log, strlen(log));
 
 }
-void executor_initLogWindow(struct Executor *e){
-    
-    if(open(e->logFileName, O_CREAT | O_TRUNC, 0777)<0)
-        perror("logFileName");
-    
-    printf("%s",e->logFileName);
-    
+
+void executor_initLogWindow(struct Executor *e) {
     if (fork() == 0) {
-        execlp("xterm", "xterm", "-hold", "-e", "tail","-f", e->logFileName,NULL);
+        execlp("xterm", "xterm", "-hold", "-T", "Registo de Processos", "-e", "tail", "-f", e->logFileName, NULL);
+    }
+}
+
+void executor_printLogFile(struct Executor *e) {
+
+    // (1) Open file
+    int logFileDes;
+    logFileDes = open(e->logFileName, O_RDONLY);
+    if (logFileDes == -1) {
+        perror("logfilename:");
+    }
+    // (2) Read the file
+    printf("> Registo de Processos");
+    printf("\n--------------------------------------\n");
+    char *buff = malloc(sizeof (char*) *100);
+    while (read(logFileDes, buff, 3) > 0) {
+        printf("%s", buff);
+    }
+    printf("--------------------------------------\n");
+    // (3) Close the file
+    close(logFileDes);
+}
+
+void executor_killAll(struct Executor *e) {
+    int totalProcesses = e->processLastIndex + 1;
+    int i;
+    for (i = 0; i < totalProcesses; i++) {
+        if (process_isRunning(e->processes[i])){
+            
+                    sleep(1);
+            if (kill(process_getPID(e->processes[i]), SIGKILL) < 0) {
+        
+                perror("Kill()");
+            }
+            
+        }
     }
 }

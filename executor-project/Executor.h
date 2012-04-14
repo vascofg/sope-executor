@@ -33,10 +33,11 @@ void executor_inform(struct Executor *e);
 void executor_terminate(struct Executor *e);
 void executor_exit(struct Executor *e);
 
-// Management of processes and activities
+// Management of processes
 void executor_addProcess(struct Executor *e,struct Process *p);
 void executor_printProcesses(struct Executor *e);
 struct Process *  executor_getProcessbyPID(struct Executor *e,int pid);
+void executor_killAll(struct Executor *e);
 
 //Sigchild handler
 void executor_sigchildHandler(int sig);
@@ -44,5 +45,6 @@ void executor_sigchildHandler(int sig);
 // Log management
 void executor_addLog(struct Executor *e,char *log);
 void executor_initLogWindow(struct Executor *e);
+void executor_printLogFile(struct Executor *e);
 #endif	/* EXECUTOR_H */
 
