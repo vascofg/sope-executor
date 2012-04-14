@@ -40,6 +40,9 @@ struct Process *  executor_getProcessbyPID(struct Executor *e,int pid);
 
 //Sigchild handler
 void executor_sigchildHandler(int sig);
+
+// Log management
 void executor_addLog(struct Executor *e,char *log);
+void executor_initLogWindow(struct Executor *e);
 #endif	/* EXECUTOR_H */
 

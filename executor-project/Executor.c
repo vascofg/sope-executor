@@ -59,7 +59,10 @@ void executor_run(struct Executor *e) {
     // (1) Setup the SIGCHILD handler
     signal(SIGCHLD, executor_sigchildHandler);
     
-    // (2) Executor loop
+    // (2) Init the log window
+    executor_initLogWindow(e);
+    
+    // (3) Executor loop
     char option;
     do {
         cls();
@@ -202,4 +205,15 @@ void executor_addLog(struct Executor *e, char *log) {
     // (2) Append data
     write(logFileDes, log, strlen(log));
 
+}
+void executor_initLogWindow(struct Executor *e){
+    
+    if(open(e->logFileName, O_CREAT | O_TRUNC, 0777)<0)
+        perror("logFileName");
+    
+    printf("%s",e->logFileName);
+    
+    if (fork() == 0) {
+        execlp("xterm", "xterm", "-hold", "-e", "tail","-f", e->logFileName,NULL);
+    }
 }
