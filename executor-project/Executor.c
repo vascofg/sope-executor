@@ -55,8 +55,10 @@ void executor_sigchildHandler(int sig) {
     sprintf(buffer, "%s terminated",process_toString(executor_getProcessbyPID(currentExecutor, pid)));
     executor_addLog(currentExecutor,buffer);
     
-    sleep(2);
+    sleep(2);        
+   
     
+
 }
 
 void executor_run(struct Executor *e) {
@@ -136,7 +138,8 @@ void executor_launch(struct Executor *e) {
 }
 
 void executor_inform(struct Executor *e) {
-    if ((e->terminatedProcesses + e->runningProcesses) == 0) printf("O ficheiro de registos está vazio. Faça alguma coisa!\n");
+    if ((e->terminatedProcesses + e->runningProcesses) == 0) 
+        printf("O ficheiro de registos está vazio. Faça alguma coisa!\n");
     else executor_printLogFile(e);
     printf("\nPrima qualquer tecla para continuar..");
     getchar();
