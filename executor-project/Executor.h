@@ -1,6 +1,7 @@
 #ifndef EXECUTOR_H
 #define	EXECUTOR_H
 #include "Process.h"
+#include "signal.h"
 struct Executor *currentExecutor;
 /**
  * Executor.h - A struct for describing a program that allows a user to launch, 
@@ -13,6 +14,7 @@ struct Executor {
     char* errorFileName;
     struct Process** processes;
     int processLastIndex;
+    pid_t logWindowPID;
 };
 /**
  * Create a new executor

@@ -60,13 +60,10 @@ void executor_sigchildHandler(int sig) {
 }
 
 void executor_run(struct Executor *e) {
-    // (1) Setup the SIGCHILD handler
-    signal(SIGCHLD, executor_sigchildHandler);
-    
-    // (2) Init the log window
+    // (1) Init the log window
     executor_initLogWindow(e);
     
-    // (3) Executor loop
+    // (2) Executor loop
     char option;
     do {
         cls();
@@ -217,8 +214,14 @@ void executor_addLog(struct Executor *e, char *log) {
 }
 
 void executor_initLogWindow(struct Executor *e) {
-    if (fork() == 0) {
+    pid_t pid=fork();
+    // Child
+    if ( pid== 0) {
         execlp("xterm", "xterm", "-hold", "-T", "Registo de Processos", "-e", "tail", "-f", e->logFileName, NULL);
+    }
+    // Parent
+    else{
+            e->logWindowPID=pid;
     }
 }
 
@@ -234,7 +237,7 @@ void executor_printLogFile(struct Executor *e) {
     printf("> Registo de Processos");
     printf("\n--------------------------------------\n");
     char *buff = malloc(sizeof (char*) *100);
-    while (read(logFileDes, buff, 3) > 0) {
+    while (read(logFileDes, buff, 1) > 0) {
         printf("%s", buff);
     }
     printf("--------------------------------------\n");
@@ -245,15 +248,18 @@ void executor_printLogFile(struct Executor *e) {
 void executor_killAll(struct Executor *e) {
     int totalProcesses = e->processLastIndex + 1;
     int i;
+    // Kill all the processes
     for (i = 0; i < totalProcesses; i++) {
-        if (process_isRunning(e->processes[i])){
-            
-                    sleep(1);
-            if (kill(process_getPID(e->processes[i]), SIGKILL) < 0) {
-        
-                perror("Kill()");
-            }
-            
+        if (process_isRunning(e->processes[i])) {
+            if (kill(process_getPID(e->processes[i]), SIGKILL) < 0) perror("Kill()");
+            //  Add log
+            char * buffer = malloc(sizeof (char *) *MAX_LINE);
+            sprintf(buffer, "%s terminated", process_toString(e->processes[i]));
+            executor_addLog(e, buffer);
+
         }
     }
+    
+    // Kill the windows
+    kill(e->logWindowPID,SIGKILL);
 }
