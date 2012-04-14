@@ -3,10 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#define MAX_STRING_LENGTH 100
 void process_create(struct Process *p,char *command, int PID){
     p->PID=PID;
     p->isRunning=1;
-    p->command=malloc(sizeof(char)*100);
+    p->command=malloc(sizeof(char)*MAX_STRING_LENGTH);
     strcpy(p->command,command);
 }
 
@@ -49,4 +50,10 @@ void process_print(struct Process *p){
 void process_printn(struct Process *p){
     process_print(p);
     printf("\n");
+}
+
+char * process_toString(struct Process *p){
+    char * buffer=malloc(sizeof(char)*MAX_STRING_LENGTH);
+    sprintf (buffer,"Process \"%s\" with PID %d",p->command, p->PID);
+    return buffer;
 }

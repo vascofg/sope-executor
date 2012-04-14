@@ -10,35 +10,57 @@
 #include <signal.h>
 #define MAX_LINE 100
 #define MAX_PROCESSES 20
-#define MAX_ACTIVITIES 50
 void cls(void) {
   printf("%c[2J",27);
 }
+
 void executor_create(struct Executor *e, char* logFileName, char* errorFileName) {
+    // (1) Set the log and error files name
     e->logFileName = logFileName;
     e->errorFileName = errorFileName;
-
+    
+    // (2) Counters start at 0
     e->runningProcesses = 0;
     e->terminatedProcesses = 0;
-
+    
+    // (3) Since we don't have any processes running at creation, the last index is -1
     e->processLastIndex = -1;
     e->processes = malloc(sizeof (struct Process *) * MAX_PROCESSES);
+    
+    // (4) Set the global variable of the current executor to this executor
     currentExecutor = e;
 }
 
 void executor_sigchildHandler(int sig) {
+    // (1) get the pid
     pid_t pid;
     pid = wait(NULL);
+    
+    // (2) Terminate the process in the executor
     process_terminate(executor_getProcessbyPID(currentExecutor, pid));
+    
+    // (3) Update counters
     currentExecutor->terminatedProcesses++;
     currentExecutor->runningProcesses--;
-    printf("Process with %d terminated.\n", pid);
+    
+    // (4) Alert user
+    printf("\nProcess with %d terminated.\n", pid);
+    
+    // (5) Add log
+    char * buffer=malloc(sizeof(char *)*MAX_LINE);
+    sprintf(buffer, "%s terminated",process_toString(executor_getProcessbyPID(currentExecutor, pid)));
+    executor_addLog(currentExecutor,buffer);
+    
     sleep(2);
+    
 }
 
 void executor_run(struct Executor *e) {
-    char option;
+    // (1) Setup the SIGCHILD handler
     signal(SIGCHLD, executor_sigchildHandler);
+    
+    // (2) Executor loop
+    char option;
     do {
         cls();
         executor_printHeader(e);
@@ -81,6 +103,7 @@ void executor_launch(struct Executor *e) {
     // (1) get the command
     printf("> ");
     gets(cmd);
+    
     //(2) fork
     // child
     if ((pid = fork()) == 0) {
@@ -88,7 +111,7 @@ void executor_launch(struct Executor *e) {
     }// failed
     else if (pid < 0) {
         perror("fork(): ");
-    }        // parent
+    }// parent
     else {
         // Create the information of the process
         struct Process *p = malloc(sizeof (struct Process));
@@ -96,6 +119,13 @@ void executor_launch(struct Executor *e) {
         e->runningProcesses++;
         executor_addProcess(e, p);
         process_printn(p);
+
+        //  Add log
+        char * buffer = malloc(sizeof (char *) *MAX_LINE);
+        sprintf(buffer, "%s created", process_toString(p));
+        executor_addLog(e, buffer);
+
+
         sleep(2);
 
     }
@@ -124,15 +154,14 @@ void executor_terminate(struct Executor *e) {
         do {
             printf("PID> ");
             gets(input);
-            pid=atoi(input);
-        }while(executor_getProcessbyPID(e,pid)==NULL);
+            pid = atoi(input);
+        } while (executor_getProcessbyPID(e, pid) == NULL);
 
         if (kill(pid, SIGKILL) < 0) {
             perror("Kill()");
         };
         sleep(1); // wait feedback
-    }
-    else{
+    } else {
         printf("There are no processes running!\n");
     }
 
@@ -156,4 +185,21 @@ struct Process * executor_getProcessbyPID(struct Executor *e, int pid) {
             return e->processes[i];
 
     return NULL;
+}
+
+void executor_addLog(struct Executor *e, char *log) {
+
+    // (1) Open log file in append mode
+    int logFileDes;
+    logFileDes = open(e->logFileName, O_RDWR | O_CREAT | O_APPEND, 0777);
+
+    // Error Handling
+    if (logFileDes < 0) {
+        perror("logFileName: ");
+        exit(1);
+    }
+    strcat(log, "\n");
+    // (2) Append data
+    write(logFileDes, log, strlen(log));
+
 }

@@ -33,5 +33,5 @@ void process_print(struct Process *p);
 void process_printn(struct Process *p);
 void process_terminate(struct Process *p);
 bool process_isRunning(struct Process *p);
-
+char * process_toString(struct Process *p);
 #endif
