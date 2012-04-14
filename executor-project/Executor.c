@@ -55,9 +55,11 @@ void executor_sigchildHandler(int sig) {
     sprintf(buffer, "%s terminated",process_toString(executor_getProcessbyPID(currentExecutor, pid)));
     executor_addLog(currentExecutor,buffer);
     
-    sleep(2);        
-   
+    sleep(2);
     
+    executor_printHeader(currentExecutor);
+    printf("Ordem: ");
+    fflush(stdout);
 
 }
 
