@@ -137,17 +137,6 @@ void executor_launch(struct Executor *e) {
     //(2) fork
     // child
     if ((pid = fork()) == 0) {
-        FILE *tempUtime, *tempStime;
-        tempUtime=fopen("startUtime.tmp", "wb");
-        tempStime=fopen("startStime.tmp", "wb");
-        struct rusage ru;
-        getrusage(RUSAGE_SELF, &ru);
-        struct timeval startUtime = ru.ru_utime;
-        struct timeval startStime= ru.ru_stime;
-        fwrite(&startUtime, sizeof(struct timeval), 1, tempUtime);
-        fwrite(&startStime, sizeof(struct timeval), 1, tempStime);
-        fclose(tempUtime);
-        fclose(tempStime);
         execlp("xterm", "xterm", "-hold", "-e", cmd, NULL);
     }// failed
     else if (pid < 0) {
@@ -167,17 +156,10 @@ void executor_launch(struct Executor *e) {
         executor_addLog(e, buffer);
         executor_printError(e, "erro 1 2 3");
 
-        FILE *tempUtime, *tempStime;
-        while (fopen("startUtime.tmp", "rb")==NULL) {
-        }
-        tempUtime=fopen("startUtime.tmp", "rb");
-        while (fopen("startStime.tmp", "rb")==NULL) {
-        }
-        tempStime=fopen("startStime.tmp", "rb");
-        fread(&p->startUtime, sizeof (struct timeval), 1, tempUtime);
-        fread(&p->startStime, sizeof (struct timeval), 1, tempStime);
-        remove("startUtime.tmp");
-        remove("startStime.tmp");
+        struct rusage ru;
+        getrusage(RUSAGE_SELF, &ru);
+        p->startUtime = ru.ru_utime;
+        p->startStime = ru.ru_stime;
         sleep(2);
 
     }
