@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <signal.h>
+#include <unistd.h>
 #define MAX_LINE 100
 #define MAX_PROCESSES 20
 void cls(void) {
@@ -32,7 +33,11 @@ void executor_create(struct Executor *e, char* logFileName, char* errorFileName)
     
     // (5) Create the log file
      if(open(e->logFileName, O_CREAT | O_TRUNC, 0777)<0)
-        perror("logFileName");
+        perror("logFile");
+    
+    // (6) Create the error file and redirects standard error
+    if((e->errorDescriptor=open(e->errorFileName, O_CREAT | O_TRUNC, 0777))<0)
+        perror("errorFile");
 }
 
 void executor_sigchildHandler(int sig) {
@@ -56,7 +61,7 @@ void executor_sigchildHandler(int sig) {
     executor_addLog(currentExecutor,buffer);
     
     sleep(2);
-    
+    cls();
     executor_printHeader(currentExecutor);
     printf("Ordem: ");
     fflush(stdout);
@@ -64,9 +69,9 @@ void executor_sigchildHandler(int sig) {
 }
 
 void executor_run(struct Executor *e) {
-    // (1) Init the log window
+    // (1) Init the necessary windows
     executor_initLogWindow(e);
-    
+    executor_initErrorWindow(e);
     // (2) Executor loop
     char option;
     do {
@@ -132,7 +137,7 @@ void executor_launch(struct Executor *e) {
         char * buffer = malloc(sizeof (char *) *MAX_LINE);
         sprintf(buffer, "%s created", process_toString(p));
         executor_addLog(e, buffer);
-
+        executor_printError(e, "erro 1 2 3");
 
         sleep(2);
 
@@ -174,7 +179,9 @@ void executor_terminate(struct Executor *e) {
         };
         sleep(1); // wait feedback
     } else {
-        printf("There are no processes running!\n");
+        printf("Não existem processos a corrrer!\n");
+        printf("\nPrima qualquer tecla para continuar..");
+        getchar();
     }
 
 
@@ -211,10 +218,29 @@ void executor_addLog(struct Executor *e, char *log) {
         perror("logFileName: ");
         exit(1);
     }
-    strcat(log, "\n");
 
     // (2) Append data
     write(logFileDes, log, strlen(log));
+    write(logFileDes, "\n", 1);
+
+}
+
+void executor_printError(struct Executor *e, char *error) {
+
+    // (1) Open error file in append mode
+    int errorFileDes;
+    errorFileDes = open(e->errorFileName, O_RDWR | O_CREAT | O_APPEND, 0777);
+
+    // Error Handling
+    if (errorFileDes < 0) {
+        perror("errorFile: ");
+        exit(1);
+    }
+
+    // (2) Append data
+    write(errorFileDes, error, strlen(error));
+    write(errorFileDes, "\n", 1);
+ 
 
 }
 
@@ -230,6 +256,17 @@ void executor_initLogWindow(struct Executor *e) {
     }
 }
 
+void executor_initErrorWindow(struct Executor *e) {
+    pid_t pid=fork();
+    // Child
+    if ( pid== 0) {
+        execlp("xterm", "xterm", "-hold", "-T", "Janela de Erros", "-e", "tail", "-f", e->errorFileName, NULL);
+    }
+    // Parent
+    else{
+            e->errorWindowPID=pid;
+    }
+}
 void executor_printLogFile(struct Executor *e) {
 
     // (1) Open file
@@ -267,4 +304,5 @@ void executor_killAll(struct Executor *e) {
     
     // Kill the windows
     kill(e->logWindowPID,SIGKILL);
+    kill(e->errorWindowPID,SIGKILL);
 }

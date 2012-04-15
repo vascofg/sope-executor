@@ -10,11 +10,14 @@ struct Executor *currentExecutor;
 struct Executor {
     int runningProcesses;
     int terminatedProcesses;
-    char* logFileName;
-    char* errorFileName;
     struct Process** processes;
     int processLastIndex;
+    char* logFileName;
+    char* errorFileName;
     pid_t logWindowPID;
+    pid_t errorWindowPID;
+    int errorDescriptor;
+    
 };
 /**
  * Create a new executor
@@ -44,9 +47,13 @@ void executor_killAll(struct Executor *e);
 //Sigchild handler
 void executor_sigchildHandler(int sig);
 
-// Log management
+// Log handling
 void executor_addLog(struct Executor *e,char *log);
 void executor_initLogWindow(struct Executor *e);
 void executor_printLogFile(struct Executor *e);
+
+// Error handling
+void executor_initErrorWindow(struct Executor *e);
+void executor_printError(struct Executor *e, char *error);
 #endif	/* EXECUTOR_H */
 
