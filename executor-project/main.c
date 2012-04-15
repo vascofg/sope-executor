@@ -11,4 +11,3 @@ int main(int argc, char* argv[]) {
     executor_run(&e);
     exit(0);
 }
-

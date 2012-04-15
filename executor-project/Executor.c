@@ -55,8 +55,25 @@ void executor_sigchildHandler(int sig) {
     // (4) Alert user
     printf("\nProcess with %d terminated.\n", pid);
     
+    struct rusage ru;
+    getrusage(RUSAGE_SELF, &ru);
+    executor_getProcessbyPID(currentExecutor, pid)->endUtime = ru.ru_utime;
+    executor_getProcessbyPID(currentExecutor, pid)->endStime = ru.ru_stime;
+    
+    executor_getProcessbyPID(currentExecutor, pid)->uTime = ((executor_getProcessbyPID(currentExecutor, pid)->endUtime.tv_sec 
+            + (executor_getProcessbyPID(currentExecutor, pid)->endUtime.tv_usec))
+            -(executor_getProcessbyPID(currentExecutor, pid)->startUtime.tv_sec
+            + (executor_getProcessbyPID(currentExecutor, pid)->startUtime.tv_usec)))/1000000.0;
+    executor_getProcessbyPID(currentExecutor, pid)->sTime = ((executor_getProcessbyPID(currentExecutor, pid)->endStime.tv_sec 
+            + (executor_getProcessbyPID(currentExecutor, pid)->endStime.tv_usec))
+            -(executor_getProcessbyPID(currentExecutor, pid)->startStime.tv_sec
+            + (executor_getProcessbyPID(currentExecutor, pid)->startStime.tv_usec)))/1000000.0;
+    
     // (5) Add log
     char * buffer=malloc(sizeof(char *)*MAX_LINE);
+    printf("USER TIME: %fs\n", executor_getProcessbyPID(currentExecutor, pid)->uTime);
+    printf("SYSTEM TIME: %fs\n", executor_getProcessbyPID(currentExecutor, pid)->sTime);
+    fflush(stdin);
     sprintf(buffer, "%s terminated",process_toString(executor_getProcessbyPID(currentExecutor, pid)));
     executor_addLog(currentExecutor,buffer);
     
@@ -120,6 +137,17 @@ void executor_launch(struct Executor *e) {
     //(2) fork
     // child
     if ((pid = fork()) == 0) {
+        FILE *tempUtime, *tempStime;
+        tempUtime=fopen("startUtime.tmp", "wb");
+        tempStime=fopen("startStime.tmp", "wb");
+        struct rusage ru;
+        getrusage(RUSAGE_SELF, &ru);
+        struct timeval startUtime = ru.ru_utime;
+        struct timeval startStime= ru.ru_stime;
+        fwrite(&startUtime, sizeof(struct timeval), 1, tempUtime);
+        fwrite(&startStime, sizeof(struct timeval), 1, tempStime);
+        fclose(tempUtime);
+        fclose(tempStime);
         execlp("xterm", "xterm", "-hold", "-e", cmd, NULL);
     }// failed
     else if (pid < 0) {
@@ -139,13 +167,24 @@ void executor_launch(struct Executor *e) {
         executor_addLog(e, buffer);
         executor_printError(e, "erro 1 2 3");
 
+        FILE *tempUtime, *tempStime;
+        while (fopen("startUtime.tmp", "rb")==NULL) {
+        }
+        tempUtime=fopen("startUtime.tmp", "rb");
+        while (fopen("startStime.tmp", "rb")==NULL) {
+        }
+        tempStime=fopen("startStime.tmp", "rb");
+        fread(&p->startUtime, sizeof (struct timeval), 1, tempUtime);
+        fread(&p->startStime, sizeof (struct timeval), 1, tempStime);
+        remove("startUtime.tmp");
+        remove("startStime.tmp");
         sleep(2);
 
     }
 }
 
 void executor_inform(struct Executor *e) {
-    if ((e->terminatedProcesses + e->runningProcesses) == 0) 
+    if ((e->terminatedProcesses + e->runningProcesses) == 0)
         printf("O ficheiro de registos está vazio. Faça alguma coisa!\n");
     else executor_printLogFile(e);
     printf("\nPrima qualquer tecla para continuar..");
@@ -240,33 +279,32 @@ void executor_printError(struct Executor *e, char *error) {
     // (2) Append data
     write(errorFileDes, error, strlen(error));
     write(errorFileDes, "\n", 1);
- 
+
 
 }
 
 void executor_initLogWindow(struct Executor *e) {
-    pid_t pid=fork();
+    pid_t pid = fork();
     // Child
-    if ( pid== 0) {
+    if (pid == 0) {
         execlp("xterm", "xterm", "-hold", "-T", "Registo de Processos", "-e", "tail", "-f", e->logFileName, NULL);
-    }
-    // Parent
-    else{
-            e->logWindowPID=pid;
+    }// Parent
+    else {
+        e->logWindowPID = pid;
     }
 }
 
 void executor_initErrorWindow(struct Executor *e) {
-    pid_t pid=fork();
+    pid_t pid = fork();
     // Child
-    if ( pid== 0) {
+    if (pid == 0) {
         execlp("xterm", "xterm", "-hold", "-T", "Janela de Erros", "-e", "tail", "-f", e->errorFileName, NULL);
-    }
-    // Parent
-    else{
-            e->errorWindowPID=pid;
+    }// Parent
+    else {
+        e->errorWindowPID = pid;
     }
 }
+
 void executor_printLogFile(struct Executor *e) {
 
     // (1) Open file
@@ -301,8 +339,8 @@ void executor_killAll(struct Executor *e) {
 
         }
     }
-    
+
     // Kill the windows
-    kill(e->logWindowPID,SIGKILL);
-    kill(e->errorWindowPID,SIGKILL);
+    kill(e->logWindowPID, SIGKILL);
+    kill(e->errorWindowPID, SIGKILL);
 }

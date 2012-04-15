@@ -1,6 +1,8 @@
 #ifndef PROCESS_H
 #define	PROCESS_H
 #include <stdbool.h>
+#include <time.h>
+#include <sys/resource.h>
 /**
  * Process.h - A struct for defining the basic information of a process.
  */ 
@@ -8,6 +10,8 @@ struct Process {
     char *command;
     int PID;
     bool isRunning;
+    struct timeval startUtime,endUtime,startStime,endStime;
+    float sTime, uTime;
 };
 /**
  * Creates a new process with the necessary information
