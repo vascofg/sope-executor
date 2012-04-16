@@ -14,7 +14,9 @@
 #define MAX_LINE 100
 #define MAX_PROCESSES 20
 void cls(void) {
-  printf("%c[2J",27);
+    // Credit goes to http://snipplr.com/view/15319/hacky-screen-clearing-through-printf/
+   printf("\033[2J\033[0;0f");
+   printf("\033[%d;%df", 0, 0);
 }
 
 void executor_create(struct Executor *e, char* logFileName, char* errorFileName) {
