@@ -9,6 +9,8 @@
 #include <sys/stat.h>
 #include <signal.h>
 #include <unistd.h>
+#include <sys/times.h>
+
 #define MAX_LINE 100
 #define MAX_PROCESSES 20
 void cls(void) {
@@ -41,43 +43,38 @@ void executor_create(struct Executor *e, char* logFileName, char* errorFileName)
 }
 
 void executor_sigchildHandler(int sig) {
-    // (1) get the pid
+    // (1) get the pid and the pointer to the struct of the process
     pid_t pid;
     pid = wait(NULL);
+    struct Process *thisProcess=executor_getProcessbyPID(currentExecutor, pid);
     
-    // (2) Terminate the process in the executor
-    process_terminate(executor_getProcessbyPID(currentExecutor, pid));
+    // (2) Terminate the process in the executor and register the endtime
+    process_terminate(thisProcess);
+    process_endTime(thisProcess);
     
     // (3) Update counters
     currentExecutor->terminatedProcesses++;
     currentExecutor->runningProcesses--;
     
     // (4) Alert user
+    cls();
     printf("\nProcess with %d terminated.\n", pid);
     
-    struct rusage ru;
-    getrusage(RUSAGE_SELF, &ru);
-    executor_getProcessbyPID(currentExecutor, pid)->endUtime = ru.ru_utime;
-    executor_getProcessbyPID(currentExecutor, pid)->endStime = ru.ru_stime;
-    
-    executor_getProcessbyPID(currentExecutor, pid)->uTime = ((executor_getProcessbyPID(currentExecutor, pid)->endUtime.tv_sec 
-            + (executor_getProcessbyPID(currentExecutor, pid)->endUtime.tv_usec))
-            -(executor_getProcessbyPID(currentExecutor, pid)->startUtime.tv_sec
-            + (executor_getProcessbyPID(currentExecutor, pid)->startUtime.tv_usec)))/1000000.0;
-    executor_getProcessbyPID(currentExecutor, pid)->sTime = ((executor_getProcessbyPID(currentExecutor, pid)->endStime.tv_sec 
-            + (executor_getProcessbyPID(currentExecutor, pid)->endStime.tv_usec))
-            -(executor_getProcessbyPID(currentExecutor, pid)->startStime.tv_sec
-            + (executor_getProcessbyPID(currentExecutor, pid)->startStime.tv_usec)))/1000000.0;
+    // (5) Time measure
+    float realTime, userTime, sysTime;
+    realTime=process_getElapsedTime(thisProcess);
+    userTime=process_getUserTime(thisProcess);
+    sysTime=process_getSysTime(thisProcess);
     
     // (5) Add log
     char * buffer=malloc(sizeof(char *)*MAX_LINE);
-    printf("USER TIME: %fs\n", executor_getProcessbyPID(currentExecutor, pid)->uTime);
-    printf("SYSTEM TIME: %fs\n", executor_getProcessbyPID(currentExecutor, pid)->sTime);
-    fflush(stdin);
-    sprintf(buffer, "%s terminated",process_toString(executor_getProcessbyPID(currentExecutor, pid)));
+  
+    sprintf(buffer, "%s terminated\nTime: real %fs user %fs sys %fs",process_toString(thisProcess),realTime,userTime,sysTime);
     executor_addLog(currentExecutor,buffer);
-    
-    sleep(2);
+     
+    // (6) Refresh the executor
+    fflush(stdin);
+    sleep(3);
     cls();
     executor_printHeader(currentExecutor);
     printf("Ordem: ");
@@ -146,6 +143,7 @@ void executor_launch(struct Executor *e) {
         // Create the information of the process
         struct Process *p = malloc(sizeof (struct Process));
         process_create(p, cmd, pid);
+        process_beginTime(p);
         e->runningProcesses++;
         executor_addProcess(e, p);
         process_printn(p);
@@ -154,12 +152,6 @@ void executor_launch(struct Executor *e) {
         char * buffer = malloc(sizeof (char *) *MAX_LINE);
         sprintf(buffer, "%s created", process_toString(p));
         executor_addLog(e, buffer);
-        executor_printError(e, "erro 1 2 3");
-
-        struct rusage ru;
-        getrusage(RUSAGE_SELF, &ru);
-        p->startUtime = ru.ru_utime;
-        p->startStime = ru.ru_stime;
         sleep(2);
 
     }
