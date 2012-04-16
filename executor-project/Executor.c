@@ -52,7 +52,7 @@ void executor_sigchildHandler(int sig) {
     
     // (2) Terminate the process in the executor and register the endtime
     process_terminate(thisProcess);
-    process_endTime(thisProcess);
+
     
     // (3) Update counters
     currentExecutor->terminatedProcesses++;
@@ -145,7 +145,6 @@ void executor_launch(struct Executor *e) {
         // Create the information of the process
         struct Process *p = malloc(sizeof (struct Process));
         process_create(p, cmd, pid);
-        process_beginTime(p);
         e->runningProcesses++;
         executor_addProcess(e, p);
         process_printn(p);

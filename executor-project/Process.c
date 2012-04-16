@@ -12,6 +12,7 @@ void process_create(struct Process *p,char *command, int PID){
     p->isRunning=1;
     p->command=malloc(sizeof(char)*MAX_STRING_LENGTH);
     strcpy(p->command,command);
+    process_beginTime(p);
 }
 
 void process_setCommand(struct Process *p, char *command){
@@ -40,6 +41,7 @@ bool process_getRunning(struct Process *p){
 
 void process_terminate(struct Process *p){
     p->isRunning=false;
+    process_endTime(p);
 }
 
 bool process_isRunning(struct Process *p){
