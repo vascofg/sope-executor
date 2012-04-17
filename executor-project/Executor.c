@@ -63,13 +63,13 @@ void executor_sigchildHandler(int sig) {
     printf("\nProcess with %d terminated.\n", pid);
     
     // (5) Time measure
-    float realTime;
+    double realTime;
     realTime=process_getElapsedTime(thisProcess);
     
     // (5) Add log
     char * buffer=malloc(sizeof(char *)*MAX_LINE);
   
-    sprintf(buffer, "%s terminated\nTime elapsed: %fs",process_toString(thisProcess),realTime);
+    sprintf(buffer, "%s terminated\nRan for: %fs",process_toString(thisProcess),realTime);
     executor_addLog(currentExecutor,buffer);
      
     // (6) Refresh the executor
@@ -77,7 +77,7 @@ void executor_sigchildHandler(int sig) {
     sleep(3);
     cls();
     executor_printHeader(currentExecutor);
-    printf("Ordem: ");
+    printf("Order: ");
     fflush(stdout);
 
 }
@@ -93,29 +93,29 @@ void executor_run(struct Executor *e) {
         executor_printHeader(e);
         option = executor_receiveOrder(e);
         switch (option) {
-            case 'A': executor_launch(e);
+            case 'S': executor_launch(e);
                 break;
             case 'I': executor_inform(e);
                 break;
             case 'T': executor_terminate(e);
                 break;
-            case 'S': executor_exit(e);
+            case 'E': executor_exit(e);
                 break;
         }
 
-    } while (option != 'S');
+    } while (option != 'E');
 }
 
 void executor_printHeader(struct Executor *e) {
-    printf("*** Executor de comandos ***\n");
-    printf("Registo: %d comandos a decorrer; %d terminados\n", e->runningProcesses, e->terminatedProcesses);
-    printf("Controlos: (A)rrancar – (I)nformar – (T)erminar - (S)air\n");
+    printf("*** Command executer ***\n");
+    printf("Register: %d commands running; %d terminated\n", e->runningProcesses, e->terminatedProcesses);
+    printf("Controls: (S)tart – (I)nform – (T)erminate - (E)xit\n");
 }
 
 char executor_receiveOrder(struct Executor *e) {
     char input[MAX_LINE];
     do {
-        printf("Ordem: ");
+        printf("Order: ");
         gets(input);
     } while (strlen(input) != 1);
     input[0] = toupper(input[0]);
@@ -192,8 +192,11 @@ void executor_printActiveProcessesWithTimes(struct Executor *e) {
     for (i = 0; i < totalProcesses; i++) {
         if (process_isRunning(e->processes[i])) {
             process_printn(e->processes[i]);
-            printf("USER TIME: %f\n", process_getUserTime(e->processes[i]));
-            printf("SYSTEM TIME: %f\n", process_getSysTime(e->processes[i]));
+            process_endTime(e->processes[i]);
+            process_getUserSystemTimes(e->processes[i]);
+            printf("REAL TIME: %fs\n", process_getElapsedTime(e->processes[i]));
+            printf("USER TIME: %fs\n", process_getUserTime(e->processes[i]));
+            printf("SYSTEM TIME: %fs\n", process_getSysTime(e->processes[i]));
         }
     }
 }
@@ -214,8 +217,8 @@ void executor_terminate(struct Executor *e) {
             perror("Kill()");
         };
     } else {
-        printf("Não existem processos a corrrer!\n");
-        printf("\nPrima qualquer tecla para continuar..");
+        printf("There are no processes running!\n");
+        printf("\nPress enter to continie..");
         getchar();
     }
 
@@ -283,7 +286,7 @@ void executor_initLogWindow(struct Executor *e) {
     pid_t pid = fork();
     // Child
     if (pid == 0) {
-        execlp("xterm", "xterm", "-hold", "-T", "Registo de Processos", "-e", "tail", "-f", e->logFileName, NULL);
+        execlp("xterm", "xterm", "-hold", "-T", "Process Register", "-e", "tail", "-f", e->logFileName, NULL);
     }// Parent
     else {
         e->logWindowPID = pid;
@@ -294,7 +297,7 @@ void executor_initErrorWindow(struct Executor *e) {
     pid_t pid = fork();
     // Child
     if (pid == 0) {
-        execlp("xterm", "xterm", "-hold", "-T", "Janela de Erros", "-e", "tail", "-f", e->errorFileName, NULL);
+        execlp("xterm", "xterm", "-hold", "-T", "Error window", "-e", "tail", "-f", e->errorFileName, NULL);
     }// Parent
     else {
         e->errorWindowPID = pid;
@@ -310,7 +313,7 @@ void executor_printLogFile(struct Executor *e) {
         perror("logfilename:");
     }
     // (2) Read the file
-    printf("> Registo de Processos");
+    printf("> Process Register");
     printf("\n--------------------------------------\n");
     char *buff = malloc(sizeof (char*) *100);
     while (read(logFileDes, buff, 1) > 0) {
@@ -331,10 +334,10 @@ void executor_killAll(struct Executor *e) {
             process_terminate(e->processes[i]);
             //  Add log
             char * buffer = malloc(sizeof (char *) *MAX_LINE);
-            float realTime;
+            double realTime;
             realTime = process_getElapsedTime(e->processes[i]);
 
-            sprintf(buffer, "%s terminated\nTime elapsed: %fs", process_toString(e->processes[i]), realTime);
+            sprintf(buffer, "%s terminated\nRan for: %fs", process_toString(e->processes[i]), realTime);
             executor_addLog(currentExecutor, buffer);
 
         }

@@ -43,6 +43,8 @@ void executor_addProcess(struct Executor *e,struct Process *p);
 void executor_printProcesses(struct Executor *e);
 struct Process *  executor_getProcessbyPID(struct Executor *e,int pid);
 void executor_killAll(struct Executor *e);
+void executor_printActiveProcesses(struct Executor *e);
+void executor_printActiveProcessesWithTimes(struct Executor *e);
 
 //Sigchild handler
 void executor_sigchildHandler(int sig);

@@ -3,19 +3,21 @@
 #include <stdbool.h>
 #include <time.h>
 #include <sys/resource.h>
-#include <sys/times.h>
+#include <stdio.h>
+#include <string.h>
+
 /**
  * Process.h - A struct for defining the basic information of a process.
- */ 
+ */
 struct Process {
     char *command;
     int PID;
     bool isRunning;
-    struct tms cpuTimeStart;
-    struct tms cpuTimeEnd;
-    time_t timeStart;
-    time_t timeEnd;
+    struct timeval timeStart;
+    struct timeval timeEnd;
+    double uTime, sTime;
 };
+
 /**
  * Creates a new process with the necessary information
  * @param p the process pointer
@@ -38,9 +40,10 @@ bool process_getRunning(struct Process *p);
 // Process time
 void process_beginTime(struct Process *p);
 void process_endTime(struct Process *p);
+double process_getElapsedTime(struct Process *p);
+void process_getUserSystemTimes(struct Process *p);
 double process_getUserTime(struct Process *p);
 double process_getSysTime(struct Process *p);
-double process_getElapsedTime(struct Process *p);
 
 // Others methods
 void process_print(struct Process *p);
