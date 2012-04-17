@@ -73,14 +73,10 @@ void process_endTime(struct Process *p){
 }
 
 double process_getUserTime(struct Process *p){
-    int ticks_seg = sysconf(_SC_CLK_TCK);
-    float userTime=(p->cpuTimeEnd.tms_cutime -  p->cpuTimeStart.tms_cutime) / (float)ticks_seg;
-    return userTime;
+    
 }
 double process_getSysTime(struct Process *p){
-     int ticks_seg = sysconf(_SC_CLK_TCK);
-    float sysTime=(p->cpuTimeEnd.tms_cstime -  p->cpuTimeStart.tms_cstime) / (float)ticks_seg;
-    return sysTime;
+    
 }
 
 double process_getElapsedTime(struct Process *p){

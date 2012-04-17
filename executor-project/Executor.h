@@ -55,5 +55,6 @@ void executor_printLogFile(struct Executor *e);
 // Error handling
 void executor_initErrorWindow(struct Executor *e);
 void executor_printError(struct Executor *e, char *error);
+
 #endif	/* EXECUTOR_H */
 

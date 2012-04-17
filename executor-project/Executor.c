@@ -63,10 +63,8 @@ void executor_sigchildHandler(int sig) {
     printf("\nProcess with %d terminated.\n", pid);
     
     // (5) Time measure
-    float realTime, userTime, sysTime;
+    float realTime;
     realTime=process_getElapsedTime(thisProcess);
-    userTime=process_getUserTime(thisProcess);
-    sysTime=process_getSysTime(thisProcess);
     
     // (5) Add log
     char * buffer=malloc(sizeof(char *)*MAX_LINE);
@@ -171,10 +169,10 @@ void executor_launch(struct Executor *e) {
 }
 
 void executor_inform(struct Executor *e) {
-    if ((e->terminatedProcesses + e->runningProcesses) == 0)
-        printf("O ficheiro de registos está vazio. Faça alguma coisa!\n");
-    else executor_printLogFile(e);
-    printf("\nPrima qualquer tecla para continuar..");
+    if (e->runningProcesses == 0)
+        printf("There are no running processes!\n");
+    else executor_printActiveProcessesWithTimes(e);
+    printf("\nPress enter to continue..");
     getchar();
 }
 
@@ -184,6 +182,18 @@ void executor_printActiveProcesses(struct Executor *e) {
     for (i = 0; i < totalProcesses; i++) {
         if (process_isRunning(e->processes[i])) {
             process_printn(e->processes[i]);
+        }
+    }
+}
+
+void executor_printActiveProcessesWithTimes(struct Executor *e) {
+    int totalProcesses = e->processLastIndex + 1;
+    int i;
+    for (i = 0; i < totalProcesses; i++) {
+        if (process_isRunning(e->processes[i])) {
+            process_printn(e->processes[i]);
+            printf("USER TIME: %f\n", process_getUserTime(e->processes[i]));
+            printf("SYSTEM TIME: %f\n", process_getSysTime(e->processes[i]));
         }
     }
 }
@@ -203,7 +213,6 @@ void executor_terminate(struct Executor *e) {
         if (kill(pid, SIGKILL) < 0) {
             perror("Kill()");
         };
-        sleep(1); // wait feedback
     } else {
         printf("Não existem processos a corrrer!\n");
         printf("\nPrima qualquer tecla para continuar..");
@@ -319,10 +328,14 @@ void executor_killAll(struct Executor *e) {
     for (i = 0; i < totalProcesses; i++) {
         if (process_isRunning(e->processes[i])) {
             if (kill(process_getPID(e->processes[i]), SIGKILL) < 0) perror("Kill()");
+            process_terminate(e->processes[i]);
             //  Add log
             char * buffer = malloc(sizeof (char *) *MAX_LINE);
-            sprintf(buffer, "%s terminated", process_toString(e->processes[i]));
-            executor_addLog(e, buffer);
+            float realTime;
+            realTime = process_getElapsedTime(e->processes[i]);
+
+            sprintf(buffer, "%s terminated\nTime elapsed: %fs", process_toString(e->processes[i]), realTime);
+            executor_addLog(currentExecutor, buffer);
 
         }
     }
