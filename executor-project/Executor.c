@@ -127,16 +127,28 @@ char executor_receiveOrder(struct Executor *e) {
 
 void executor_launch(struct Executor *e) {
     char cmd[100];
+    char cmdWithSTDERR[100];
     pid_t pid;
 
     // (1) get the command
     printf("> ");
     gets(cmd);
     
+    // Add stderr redirect to the executor error file
+    strcpy(cmdWithSTDERR,cmd);
+    strcat(cmdWithSTDERR," 2> ");
+    strcat(cmdWithSTDERR,e->errorFileName);
+    
+    // xterm title
+    char xtermTitle[100];
+    strcpy(xtermTitle,"\"");
+    strcat(xtermTitle,cmd);
+    strcat(xtermTitle,"\"");
+    
     //(2) fork
     // child
     if ((pid = fork()) == 0) {
-        execlp("xterm", "xterm", "-hold", "-e", cmd, NULL);
+        execlp("xterm", "xterm", "-hold", "-T",xtermTitle,"-e", cmdWithSTDERR,NULL);
     }// failed
     else if (pid < 0) {
         perror("fork(): ");
