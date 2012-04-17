@@ -71,7 +71,7 @@ void executor_sigchildHandler(int sig) {
     // (5) Add log
     char * buffer=malloc(sizeof(char *)*MAX_LINE);
   
-    sprintf(buffer, "%s terminated\nTime: real %fs user %fs sys %fs",process_toString(thisProcess),realTime,userTime,sysTime);
+    sprintf(buffer, "%s terminated\nTime elapsed: %fs",process_toString(thisProcess),realTime);
     executor_addLog(currentExecutor,buffer);
      
     // (6) Refresh the executor
