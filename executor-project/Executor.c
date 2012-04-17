@@ -60,7 +60,7 @@ void executor_sigchildHandler(int sig) {
     
     // (4) Alert user
     cls();
-    printf("\nProcess with %d terminated.\n", pid);
+    printf("\nProcess with PID %d terminated.\n", pid);
     
     // (5) Time measure
     double realTime;

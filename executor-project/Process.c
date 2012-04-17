@@ -74,7 +74,6 @@ void process_endTime(struct Process *p) {
 }
 
 //FUNCTION BASED ON THE ONE FOUND HERE: https://github.com/fho/code_snippets/blob/master/c/getusage.c
-
 void process_getUserSystemTimes(struct Process *p) {
     long unsigned int *utime_ticks = malloc(sizeof (unsigned int));
     long unsigned int *stime_ticks = malloc(sizeof (unsigned int));
