@@ -126,8 +126,8 @@ char executor_receiveOrder(struct Executor *e) {
 }
 
 void executor_launch(struct Executor *e) {
-    char cmd[100];
-    char cmdWithSTDERR[100];
+    char cmd[100]; // the cmd ex: ls -l
+    char cmdWithSTDERR[100]; // the cmd with the stderr. ex: ls -l 2> erros.txt
     pid_t pid;
 
     // (1) get the command
