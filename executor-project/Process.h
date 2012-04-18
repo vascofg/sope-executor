@@ -8,6 +8,8 @@
 
 /**
  * Process.h - A struct for defining the basic information of a process.
+ * Authors: André Freitas and Vasco Gonçalves
+ * Emails: p.andrefreitas@gmail.com, vascofg@gmail.com
  */
 struct Process {
     char *command;

@@ -6,6 +6,8 @@ struct Executor *currentExecutor;
 /**
  * Executor.h - A struct for describing a program that allows a user to launch, 
  * terminate and get information about commands that he gave.
+ * Authors: André Freitas and Vasco Gonçalves
+ * Emails: p.andrefreitas@gmail.com, vascofg@gmail.com
  */
 struct Executor {
     int runningProcesses;

@@ -1,0 +1,12 @@
+Process "ls -l /" with PID 6646 created
+Process "pwd" with PID 6651 created
+Process "asasdssd" with PID 6656 created
+Process "pwd" with PID 6651 terminated
+Ran for: 18.326160s
+Process "top" with PID 6663 created
+Process "ls -l /" with PID 6646 terminated
+Ran for: 57.031943s
+Process "asasdssd" with PID 6656 terminated
+Ran for: 44.760032s
+Process "top" with PID 6663 terminated
+Ran for: 26.608003s

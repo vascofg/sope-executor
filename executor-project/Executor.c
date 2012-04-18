@@ -10,7 +10,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <sys/times.h>
-
+#include <wait.h>
 #define MAX_LINE 100
 #define MAX_PROCESSES 20
 void cls(void) {
@@ -42,6 +42,9 @@ void executor_create(struct Executor *e, char* logFileName, char* errorFileName)
     // (6) Create the error file and redirects standard error
     if((e->errorDescriptor=open(e->errorFileName, O_CREAT | O_TRUNC, 0777))<0)
         perror("errorFile");
+    
+    // (7) Sigchild handler
+    signal(SIGCHLD, executor_sigchildHandler);
 }
 
 void executor_sigchildHandler(int sig) {
