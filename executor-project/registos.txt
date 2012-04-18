@@ -1,3 +1,0 @@
-Process "ls -l" with PID 5568  terminated
-Process "ll" with PID 5645 created
-Process "ll" with PID 5645 terminated
